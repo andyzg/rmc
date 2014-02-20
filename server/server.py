@@ -36,6 +36,9 @@ flask_render_template = flask.render_template
 
 KITTEN_DATA = kitten_data.get_kitten_data()
 
+# Constants used for logging
+LOGIN_TYPE_STRING_FACEBOOK = "facebook"
+
 
 def render_template(*args, **kwargs):
     redis = view_helpers.get_redis_instance()
@@ -348,17 +351,22 @@ def onboarding():
 
 
 @app.route('/login', methods=['POST'])
-def login():
+def login_with_facebook():
+    """Login or create an account using Facebook connect
+
+    Upon successful login or account creation, returns a 'secure cookie'
+    (provided by Flask) containing the session data.
+    """
     req = flask.request
 
     fbsr = req.form.get('fb_signed_request')
 
-    # TODO(Sandy): Change log category because this isn't API?
     rmclogger.log_event(
-        rmclogger.LOG_CATEGORY_API,
+        rmclogger.LOG_CATEGORY_GENERIC,
         rmclogger.LOG_EVENT_LOGIN, {
             'fbsr': fbsr,
             'request_form': req.form,
+            'type': LOGIN_TYPE_STRING_FACEBOOK,
         },
     )
 
@@ -385,6 +393,7 @@ def login():
             rmclogger.LOG_EVENT_LOGIN, {
                 'new_user': False,
                 'user_id': user.id,
+                'type': LOGIN_TYPE_STRING_FACEBOOK,
             },
         )
 
@@ -430,6 +439,7 @@ def login():
             'new_user': True,
             'user_id': user.id,
             'referrer_id': referrer_id,
+            'type': LOGIN_TYPE_STRING_FACEBOOK,
         },
     )
 

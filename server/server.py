@@ -417,7 +417,7 @@ def login():
     if referrer_id:
         try:
             user_obj['referrer_id'] = bson.ObjectId(referrer_id)
-        except:
+        except bson.errors.InvalidId:
             pass
 
     user = m.User(**user_obj)
